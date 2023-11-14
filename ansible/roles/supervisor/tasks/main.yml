@@ -1,0 +1,19 @@
+---
+- name: Install supervisor
+  ansible.builtin.apt:
+    name: supervisor
+    state: present
+    cache_valid_time: 3600
+
+- name: Ensure Supervisor log dir exists.
+  file:
+    path: "/home/{{ vault_web_user }}/{{ http_host }}"
+    state: directory
+    mode: 0755
+
+- name: Ensure Supervisor configuration is present.
+  template:
+    src: horizon.conf.j2
+    dest: "/etc/supervisor/conf.d/horizon.conf"
+    mode: 0644
+  notify: restart supervisor

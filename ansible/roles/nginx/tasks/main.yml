@@ -1,0 +1,59 @@
+---
+- name: Install Nginx
+  apt:
+    name: nginx
+    update_cache: yes
+    state: latest
+
+- name: Ensure site directories exist
+  file:
+    path: "{{ nginx_path }}/{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - sites-available
+    - sites-enabled
+
+- name: Copy h5bp configs
+  copy:
+    src: "templates/{{ item }}"
+    dest: "{{ nginx_path }}"
+    mode: '0755'
+  with_list:
+    - 'conf.d'
+    - 'h5bp'
+  notify: reload nginx
+
+- name: Create nginx.conf
+  template:
+    src: "templates/{{ item }}"
+    dest: "{{ nginx_path }}/{{ item }}"
+    mode: '0644'
+  with_list:
+    - 'nginx.conf'
+    - 'mime.types'
+  notify: reload nginx
+  tags: nginx-includes
+
+- name: Disable default server
+  file:
+    path: "{{ nginx_path }}/sites-enabled/default"
+    state: absent
+  notify: reload nginx
+
+- name: Enable Nginx to start on boot
+  service:
+    name: nginx
+    enabled: yes
+    state: started
+    use: service
+
+# UFW Configuration
+#- name: "UFW - Allow HTTP on port {{ http_port }}"
+#  ufw:
+#    rule: allow
+#    port: "{{ item }}"
+#    proto: tcp
+#  with_list:
+#    - 80
+#    - 443

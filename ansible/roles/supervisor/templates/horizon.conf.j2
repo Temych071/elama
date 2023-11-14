@@ -1,0 +1,9 @@
+[program:horizon]
+process_name=%(program_name)s
+command=php {{ remote_www_root }}/{{ app_root_dir }}/artisan horizon
+autostart=true
+autorestart=true
+user=web_user
+redirect_stderr=true
+stdout_logfile=/home/{{ vault_web_user }}/{{ http_host }}/horizon.log
+stopwaitsecs=3600

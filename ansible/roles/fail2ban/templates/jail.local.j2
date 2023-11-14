@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+
+[DEFAULT]
+
+bantime  = 600
+maxretry = 6
+
+
+[ssh]
+
+enabled = true
+port 	= ssh
+filter = sshd
+action = iptables[name=sshd, port=ssh, protocol=tcp]
+logpath = /var/log/auth.log
+maxretry = 3
+bantime = 600

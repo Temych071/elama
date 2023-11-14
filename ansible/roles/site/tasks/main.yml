@@ -1,0 +1,7 @@
+---
+- name: Install Dependencies with Composer
+  composer:
+    no_dev: no
+    optimize_autoloader: yes
+    working_dir: "{{ remote_www_root }}/{{ app_root_dir }}/"
+  become: no

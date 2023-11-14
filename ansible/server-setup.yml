@@ -1,0 +1,34 @@
+---
+- hosts: all
+  become: true
+  vars:
+    certbot_create_if_missing: yes
+    certbot_create_method: standalone
+    certbot_admin_email: denis4341@gmail.com
+    certbot_certs:
+      - domains:
+          - daily-grow.com
+          - www.daily-grow.com
+          - app.daily-grow.com
+    certbot_create_standalone_stop_services:
+      - nginx
+  roles:
+    - { role: setup, tags: ['setup'] }
+
+    - { role: fail2ban, tags: ['fail2ban'] }
+
+    - { role: mariadb, tags: ['mysql', 'mariadb', 'db', 'lemp'] }
+
+    - { role: php, tags: ['php', 'web', 'php-fpm', 'lemp'] }
+
+    - { role: nginx, tags: ['nginx', 'web', 'http', 'lemp'] }
+
+    - { role: redis, tags: ['redis'] }
+
+    - { role: geerlingguy.certbot, tags: ['ssl', 'nginx'] }
+
+    - { role: composer, tags: ['site', 'composer']}
+
+    - { role: site, tags: ['site', 'composer'] }
+
+    - { role: supervisor, tags: ['site', 'supervisor'] }

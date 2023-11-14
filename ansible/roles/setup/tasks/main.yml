@@ -1,0 +1,61 @@
+---
+- name: Install Prerequisites
+  apt: name=aptitude update_cache=yes state=latest force_apt_get=yes
+
+# Sudo Group Setup
+- name: Make sure we have a 'wheel' group
+  group:
+    name: wheel
+    state: present
+
+- name: Allow 'wheel' group to have passwordless sudo
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: '/usr/sbin/visudo -cf %s'
+
+# User + Key Setup
+- name: Setup users
+  ansible.builtin.user:
+    name: "{{ vault_web_user }}"
+    groups: 'wheel'
+    password: "{{ vault_web_user_password }}"
+    append: true
+    state: present
+    shell: /bin/bash
+    update_password: 'always'
+    create_home: true
+
+#- name: Deploy SSH Key
+#  authorized_key:
+#    user: "{{ vault_web_user }}"
+#    key: "{{ ssh_key }}"
+#    state: present
+
+- name: Disable password authentication for root
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    state: present
+    regexp: '^#?PermitRootLogin'
+    line: 'PermitRootLogin prohibit-password'
+
+# Install Packages
+- name: Update apt
+  ansible.builtin.apt: update_cache=yes
+
+- name: Install required system packages
+  ansible.builtin.apt: name={{ sys_packages }} state=latest
+
+# UFW Setup
+#- name: UFW - Allow SSH connections
+#  ufw:
+#    rule: allow
+#    name: OpenSSH
+#
+#- name: UFW - Deny all other incoming traffic by default
+#  ufw:
+#    state: enabled
+#    policy: deny
+#    direction: incoming

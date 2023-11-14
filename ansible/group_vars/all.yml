@@ -1,0 +1,29 @@
+---
+ssh_key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
+# Initial Server Setup
+remote_user: ads
+php_version: '8.1'
+
+# MySQL Setup
+mysql_root_password: "{{ vault_db_root_password }}"
+mysql_app_db: ads
+mysql_app_user: ads_user
+mysql_app_pass: "{{ vault_db_password }}"
+
+# Web Server Setup
+http_host: "app.daily-grow.com"
+remote_www_root: /var/www
+app_root_dir: ads
+document_root: "{{ remote_www_root }}/{{ app_root_dir }}/public"
+
+# Laravel Env Variables
+app_name: "Daily Grow"
+app_env: prod
+app_debug: false
+app_url: "https://{{ http_host }}"
+db_host: localhost
+db_port: 3306
+db_database: "{{ mysql_app_db }}"
+db_user: "{{ mysql_app_user }}"
+db_pass: "{{ mysql_app_pass }}"

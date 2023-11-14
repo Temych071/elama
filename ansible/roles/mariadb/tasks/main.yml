@@ -1,0 +1,54 @@
+---
+- name: Install MariaDB & mysql-python prereq
+  ansible.builtin.apt: name={{ item }} update_cache=yes state=latest
+  loop: [ 'mariadb-server', 'mariadb-client', 'python3-pymysql' ]
+
+- name: Copy .my.cnf file with root password credentials.
+  template:
+    src: my.cnf.j2
+    dest: ~/.my.cnf
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Sets the root password
+  mysql_user:
+    name: root
+    host: "{{ item }}"
+    password: "{{ mysql_root_password }}"
+    check_implicit_admin: yes
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  with_items:
+    - localhost
+#  no_log: true
+
+- name: Delete anonymous MySQL users
+  mysql_user:
+    user: ""
+    host: "{{ item }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    state: absent
+  with_items:
+    - localhost
+
+- name: Removes the MySQL test database
+  mysql_db:
+    name: test
+    state: absent
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Creates App Database
+  mysql_db:
+    name: "{{ mysql_app_db }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    state: present
+
+- name: Create App MySQL user and grants access to App DB
+  mysql_user:
+    name: "{{ mysql_app_user }}"
+    password: "{{ mysql_app_pass }}"
+    priv: "{{ mysql_app_db }}.*:ALL"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    state: present
+#  no_log: true
